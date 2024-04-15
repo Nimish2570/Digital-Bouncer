@@ -42,12 +42,12 @@ const UpdateProduct = ( ) => {
   const [imagesPreview, setImagesPreview] = useState([]);
 
   const categories = [
-    "Laptop",
-    "Footwear",
-    "Bottom",
-    "Tops",
-    "Attire",
-    "Camera",
+    "Telegram",
+    "Whatsapp",
+    "Facebook",
+    "Instagram",
+    "Maps",
+    "Gmail",
     "SmartPhones",
   ];
   const params = useParams();

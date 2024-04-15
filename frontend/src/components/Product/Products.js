@@ -13,13 +13,13 @@ import MetaData from '../layout/MetaData'
 
 
 const categories = [
+    "Telegram",
     "Whatsapp",
     "Facebook",
     "Instagram",
-    "Telegram",
     "Maps",
     "Gmail",
-    "Smartphone",
+    "SmartPhones",
     ]
 
 const Products = () => {
