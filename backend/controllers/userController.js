@@ -15,10 +15,10 @@ exports.registerUser = catchAsyncErrors(async(req,res,next)=>{
         crop:"scale"
     })
     const {name,email,password} = req.body;
-    email =email.toLowerCase();
+    
     const user = await User.create({
         name,
-        email,
+        email:email.toLowerCase(),
         password,
         avatar:{
             public_id:myCloud.public_id,
@@ -32,13 +32,14 @@ exports.registerUser = catchAsyncErrors(async(req,res,next)=>{
 exports.loginUser = catchAsyncErrors(async(req,res,next)=>{
     const {email,password} = req.body;
     //lower case email
-    email =email.toLowerCase();
+    
     //check if email and password is entered by user
     if(!email || !password){
         return next(new ErrorHandler("Please enter email and password",400))
     }
     //finding user in database
-    const user = await User.findOne({email}).select("+password");
+    const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+
     if(!user){
         return next(new ErrorHandler("Invalid email or password",401))
     }
