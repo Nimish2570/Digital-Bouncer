@@ -15,7 +15,7 @@ exports.registerUser = catchAsyncErrors(async(req,res,next)=>{
         crop:"scale"
     })
     const {name,email,password} = req.body;
-    email.toLowerCase();
+    email =email.toLowerCase();
     const user = await User.create({
         name,
         email,
@@ -32,7 +32,7 @@ exports.registerUser = catchAsyncErrors(async(req,res,next)=>{
 exports.loginUser = catchAsyncErrors(async(req,res,next)=>{
     const {email,password} = req.body;
     //lower case email
-    email.toLowerCase();
+    email =email.toLowerCase();
     //check if email and password is entered by user
     if(!email || !password){
         return next(new ErrorHandler("Please enter email and password",400))
@@ -65,7 +65,7 @@ exports.logoutUser = catchAsyncErrors(async(req,res,next)=>{
 
 //forget password
 exports.forgotPassword = catchAsyncErrors(async(req,res,next)=>{
-    const user = await User.findOne({email:req.body.email});
+    const user = await User.findOne({email:req.body.email.toLowerCase()});
     if(!user){
         return next(new ErrorHandler("User not found with this email",404))
     }
@@ -146,7 +146,7 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
 exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
     const newUserData = {
         name: req.body.name,
-        email: req.body.email
+        email: req.body.email.toLowerCase()
     }
     //update avatar
     if (req.body.avatar) {
@@ -206,7 +206,7 @@ exports.getSingleUserDetails = catchAsyncErrors(async(req,res,next)=>{
 exports.updateUser = catchAsyncErrors(async(req,res,next)=>{
     const newUserData = {
         name:req.body.name,
-        email:req.body.email,
+        email:req.body.email.toLowerCase(),
         role:req.body.role
     }
 

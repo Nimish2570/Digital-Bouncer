@@ -81,20 +81,29 @@ const LoginSignUp = () => {
         dispatch(register(myForm));
     }
 
-    const registerDataChange =(e) =>{
-        if(e.target.name === 'avatar'){
-            const reader = new FileReader();
-            reader.onload = () =>{
-                if(reader.readyState === 2){
-                    setAvatarPreview(reader.result);
-                    setAvatar(reader.result);
-                }
-            }
-            reader.readAsDataURL(e.target.files[0]);
-        }else{
-            setUser({...user,[e.target.name]:e.target.value});
+    const registerDataChange = (e) => {
+      if (e.target.name === 'avatar') {
+        const file = e.target.files[0];
+    
+       
+        if (file.size > 1024 * 1024) {
+          alert("Please upload an image less than 1MB.");
+          return;
         }
-    }
+    
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (reader.readyState === 2) {
+            setAvatarPreview(reader.result);
+            setAvatar(reader.result);
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setUser({ ...user, [e.target.name]: e.target.value });
+      }
+    };
+    
 
   return (
   
