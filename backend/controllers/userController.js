@@ -15,6 +15,7 @@ exports.registerUser = catchAsyncErrors(async(req,res,next)=>{
         crop:"scale"
     })
     const {name,email,password} = req.body;
+    email.toLowerCase();
     const user = await User.create({
         name,
         email,
@@ -30,6 +31,8 @@ exports.registerUser = catchAsyncErrors(async(req,res,next)=>{
 //login user
 exports.loginUser = catchAsyncErrors(async(req,res,next)=>{
     const {email,password} = req.body;
+    //lower case email
+    email.toLowerCase();
     //check if email and password is entered by user
     if(!email || !password){
         return next(new ErrorHandler("Please enter email and password",400))
