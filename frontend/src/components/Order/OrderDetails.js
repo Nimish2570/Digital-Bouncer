@@ -43,16 +43,10 @@ const OrderDetails = ({ match }) => {
                   <span>{order.user && order.user.name}</span>
                 </div>
                 <div>
-                  <p>Phone:</p>
+                  <p>purchase date:</p>
                   <span>
-                    {order.shippingInfo && order.shippingInfo.phoneNo}
-                  </span>
-                </div>
-                <div>
-                  <p>Address:</p>
-                  <span>
-                    {order.shippingInfo &&
-                      `${order.shippingInfo.address}, ${order.shippingInfo.city}, ${order.shippingInfo.state}, ${order.shippingInfo.pinCode}, ${order.shippingInfo.country}`}
+                    {order.createdAt &&
+                      new Date(order.createdAt).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -102,14 +96,18 @@ const OrderDetails = ({ match }) => {
                 {order.orderItems &&
                   order.orderItems.map((item) => (
                     <div key={item.product}>
-                      <img src={item.image} alt="Product" />
+                      
+                      <img src= {item.image} alt="Product" />
                       <Link to={`/product/${item.product}`}>
                         {item.name}
+                      
                       </Link>{" "}
                       <span>
+
                         {item.quantity} X ₹{item.price} ={" "}
                         <b>₹{item.price * item.quantity}</b>
                       </span>
+                      
                     </div>
                   ))}
               </div>
