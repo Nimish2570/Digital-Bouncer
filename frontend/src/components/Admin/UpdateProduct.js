@@ -36,6 +36,7 @@ const UpdateProduct = ( ) => {
   const [price, setPrice] = useState(0);
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [gdrivelink, setGdrivelink] = useState("");
   const [Stock, setStock] = useState(0);
   const [images, setImages] = useState([]);
   const [oldImages, setOldImages] = useState([]);
@@ -62,6 +63,7 @@ const UpdateProduct = ( ) => {
       setPrice(product.price);
       setCategory(product.category);
       setStock(product.Stock);
+      setGdrivelink(product.googleDriveLink);
       setOldImages(product.images);
     }
     if (error) {
@@ -100,6 +102,7 @@ const UpdateProduct = ( ) => {
     myForm.set("description", description);
     myForm.set("category", category);
     myForm.set("Stock", Stock);
+    myForm.set("googleDriveLink", gdrivelink);
 
     images.forEach((image) => {
       myForm.append("images", image);
@@ -188,6 +191,18 @@ const UpdateProduct = ( ) => {
                 ))}
               </select>
             </div>
+
+            <div>
+              <StorageIcon />
+              <input
+                type="text"
+                placeholder="Google Drive Link"
+                required
+                value={gdrivelink}
+                onChange={(e) => setGdrivelink(e.target.value)}
+              />
+            </div>
+            
               
             <div>
               <AccountTreeIcon />
@@ -207,6 +222,7 @@ const UpdateProduct = ( ) => {
                 
               </select>
             </div>
+
 
           
 

@@ -4,29 +4,16 @@ import { useSelector, useDispatch } from "react-redux";
 import MetaData from "../layout/MetaData";
 import { Typography } from "@material-ui/core";
 import { useAlert } from "react-alert";
-import {
-  CardNumberElement,
-  CardCvcElement,
-  CardExpiryElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
-
 import axios from "axios";
 import "./payment.css";
-import CreditCardIcon from "@material-ui/icons/CreditCard";
-import EventIcon from "@material-ui/icons/Event";
-import VpnKeyIcon from "@material-ui/icons/VpnKey";
 import { createOrder, clearErrors } from "../../actions/orderAction";
 import { useNavigate } from "react-router-dom";
 
 const Payment = () => {
   const orderInfo = JSON.parse(sessionStorage.getItem("orderInfo"));
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const alert = useAlert();
-  const stripe = useStripe();
-  const elements = useElements();
+  const navigate = useNavigate();
   const payBtn = useRef(null);
 
   const { shippingInfo, cartItems } = useSelector((state) => state.cart);
@@ -34,10 +21,10 @@ const Payment = () => {
   const { error } = useSelector((state) => state.newOrder);
 
   const paymentData = {
-    amount: Math.round(orderInfo.totalPrice * 100),
+    amount: Math.round(orderInfo.totalPrice ),
   };
 
-  const order = {
+  const orderReal = {
     shippingInfo,
     orderItems: cartItems,
     itemsPrice: orderInfo.subtotal,
@@ -46,52 +33,63 @@ const Payment = () => {
     totalPrice: orderInfo.totalPrice,
   };
 
-  const submitHandler = async (e) => {
+  const checkoutHandler = async (e) => {
     e.preventDefault();
-
-    payBtn.current.disabled = true;
-
+    
     try {
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
+      const { data: { key } } = await axios.get(`/api/v1/getkey`);
+      const { data: { order } } = await axios.post(`/api/v1/checkout`, { amount: paymentData.amount });
+
+      var options = {
+        key: key,
+        amount: order.amount,
+        currency: "INR",
+        name: "Nimish Chaturvedi",
+        description: "Transaction",
+        image: "https://tse1.mm.bing.net/th?id=OIP.awAiMS1BCAQ2xS2lcdXGlwHaHH&pid=Api&rs=1&c=1&qlt=95&w=125&h=120",
+        order_id: order.id,
+        callback_url: `/api/v1/payment/verification`,
+        prefill: {
+          name: user.name,
+          email: user.email,
+          contact: shippingInfo.phoneNo,
+        },
+        notes: {
+          address: shippingInfo.address,
+        },
+        theme: {
+          color: "#3399cc",
+        },
+        handler: async function (response) {
+          try {
+            const verificationResponse = await axios.post(
+              `/api/v1/payment/verification`,
+              response
+            );
+            if (verificationResponse.data.success) {
+              orderReal.paymentInfo = {
+                id: response.razorpay_payment_id,
+                status: "success",
+              };
+
+              dispatch(createOrder(orderReal));
+              navigate("/success");
+            } else {
+              alert.error("Payment verification failed. Please try again.");
+            }
+          } catch (error) {
+            console.error(error);
+            alert.error("Payment verification failed. Please try again.");
+          }
         },
       };
-      // const { data } = await axios.post(
-      //   "/api/v1/payment/process",
-      //   paymentData,
-      //   config
-      // );
 
-      // const client_secret = data.client_secret;
+      const razor = new window.Razorpay(options);
+      razor.open();
 
-      if (!stripe || !elements) return;
-
-      const result = {
-        paymentIntent: {
-          id: "pi_1J0zg2FZq4f5n1ZV4t4s9d4P",
-          status: "succeeded",
-        },
-      };
-
-      
-
-      
-      
-       
-          order.paymentInfo = {
-            id: result.paymentIntent.id,
-            status: result.paymentIntent.status,
-          };
-
-          dispatch(createOrder(order));
-
-          navigate("/success")
-        
-      }
-     catch (error) {
-      payBtn.current.disabled = false;
-      alert.error(error.response.data.message);
+    } catch (error) {
+      console.error(error);
+      alert.error('Payment failed. Please try again.');
     }
   };
 
@@ -107,21 +105,10 @@ const Payment = () => {
       <MetaData title="Payment" />
       <CheckoutSteps activeStep={2} />
       <div className="paymentContainer">
-      <form className="paymentForm" onSubmit={(e) => submitHandler(e)}>
-          <Typography>Card Info</Typography>
-          <div>
-            <CreditCardIcon />
-            <CardNumberElement className="paymentInput" />
-          </div>
-          <div>
-            <EventIcon />
-            <CardExpiryElement className="paymentInput" />
-          </div>
-          <div>
-            <VpnKeyIcon />
-            <CardCvcElement className="paymentInput" />
-          </div>
-
+        <Typography className="paymentTitle">
+          PAY USING RAZORPAY <a href="https://razorpay.com/docs/payments/payments/test-card-details/" >DUMMY CARD </a>
+        </Typography>
+        <form className="paymentForm" onSubmit={checkoutHandler}>
           <input
             type="submit"
             value={`Pay - ₹${orderInfo && orderInfo.totalPrice}`}
@@ -129,7 +116,10 @@ const Payment = () => {
             className="paymentFormBtn"
           />
         </form>
+   
+        
       </div>
+
     </Fragment>
   );
 };

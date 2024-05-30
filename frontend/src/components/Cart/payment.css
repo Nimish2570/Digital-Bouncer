@@ -1,6 +1,7 @@
 .paymentContainer {
     display: grid;
     place-items: center;
+    padding: 5vmax;
     background-color: rgb(255, 255, 255);
     height: 65vh;
     margin: 2vmax;
@@ -88,3 +89,4 @@
       padding: 4vw;
     }
   }
+  
