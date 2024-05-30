@@ -5,7 +5,7 @@ const ErrorHandler = require("../utils/errorhandler");
 const catchAsyncErrors = require("../middleware/catchAsyncError");
 
 //create new order
-exports.newOrder = catchAsyncErrors(async(req,res,next)=>{
+exports.newOrder = catchAsyncErrors(async(req, res, next) => {
     const {
         orderItems,
         paymentInfo,
@@ -16,7 +16,6 @@ exports.newOrder = catchAsyncErrors(async(req,res,next)=>{
     } = req.body;
     
     const order = await Order.create({
-        
         orderItems,
         paymentInfo,
         itemsPrice,
@@ -31,25 +30,48 @@ exports.newOrder = catchAsyncErrors(async(req,res,next)=>{
     // Update user allSoftwares
     const softwaresToUpdate = [];
     for (const item of orderItems) {
-        const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + item.quantity); // Increment months by quantity
-        softwaresToUpdate.push({
-            ProductID: item.product,
-            EndDate: endDate
+        const existingSoftware = await User.findOne({
+            _id: req.user._id,
+            "allSoftwares.ProductID": item.product
         });
+
+        if (existingSoftware) {
+            // Software already exists, update its end date
+            await User.findOneAndUpdate({
+                _id: req.user._id,
+                "allSoftwares.ProductID": item.product
+            }, {
+                $set: { "allSoftwares.$.EndDate": calculateEndDate(existingSoftware.allSoftwares.find(software => software.ProductID === item.product).EndDate, item.quantity) }
+            });
+        } else {
+            // Software doesn't exist, push it
+            const endDate = calculateEndDate(new Date(), item.quantity); // Calculate end date
+            softwaresToUpdate.push({
+                ProductID: item.product,
+                EndDate: endDate
+            });
+        }
     }
 
-    await User.findByIdAndUpdate(req.user.id, {
-        $push: {
-            allSoftwares: { $each: softwaresToUpdate }
-        }
-    });
+    if (softwaresToUpdate.length > 0) {
+        await User.findByIdAndUpdate(req.user._id, {
+            $push: { allSoftwares: { $each: softwaresToUpdate } }
+        });
+    }
 
     res.status(200).json({
         success: true,
         order
     });
 });
+
+// Function to calculate end date based on current date and quantity
+function calculateEndDate(startDate, quantity) {
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + quantity); // Increment months by quantity
+    return endDate;
+}
+
 
 //get single order
 exports.getSingleOrder = catchAsyncErrors(async(req,res,next)=>{
